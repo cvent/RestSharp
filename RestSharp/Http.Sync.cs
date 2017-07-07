@@ -152,8 +152,8 @@ namespace RestSharp
             this.restrictedHeaderActions.Add("Referer", (r, v) => r.Referer = v);
             this.restrictedHeaderActions.Add("Transfer-Encoding", (r, v) =>
                                                                   {
-                                                                      r.TransferEncoding = v;
                                                                       r.SendChunked = true;
+                                                                      r.TransferEncoding = v;
                                                                   });
             this.restrictedHeaderActions.Add("User-Agent", (r, v) => r.UserAgent = v);
         }
