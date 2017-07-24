@@ -20,6 +20,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using RestSharp.Extensions;
 
@@ -140,21 +141,29 @@ namespace RestSharp
         partial void AddSyncHeaderActions()
         {
             //this.restrictedHeaderActions.Add("Connection", (r, v) => r.Connection = v);
-            this.restrictedHeaderActions.Add("Connection", (r, v) => {
+            this.restrictedHeaderActions.Add("Connection", (r, v) =>
+            {
                 if (v.ToLower().Contains("keep-alive"))
-                    r.KeepAlive = true; //if a user sets the connection header explicitly to "keep-alive" then we set the field on HttpWebRequest
+                    r.KeepAlive =
+                        true; //if a user sets the connection header explicitly to "keep-alive" then we set the field on HttpWebRequest
                 else
-                    r.KeepAlive = false; //if "Connection" is specified as anything else, we turn off keep alive functions
+                    r.KeepAlive =
+                        false; //if "Connection" is specified as anything else, we turn off keep alive functions
             });
             this.restrictedHeaderActions.Add("Content-Length", (r, v) => r.ContentLength = Convert.ToInt64(v));
             this.restrictedHeaderActions.Add("Expect", (r, v) => r.Expect = v);
             this.restrictedHeaderActions.Add("If-Modified-Since", (r, v) => r.IfModifiedSince = Convert.ToDateTime(v));
             this.restrictedHeaderActions.Add("Referer", (r, v) => r.Referer = v);
             this.restrictedHeaderActions.Add("Transfer-Encoding", (r, v) =>
-                                                                  {
-                                                                      r.TransferEncoding = v;
-                                                                      r.SendChunked = true;
-                                                                  });
+            {
+                // HttpWebRequest enforces that SendChunked be true prior to setting any TransferEncoding, but since chunked
+                // is handled separately HttpWebRequest also enforces that it may not be assigned to TransferEncoding.
+                // However, Transfer-Encoding accepts a comma-delimited list so we have to handle that scenario
+                // (even though the remaining acceptable values are typically set as HttpRequestHeader.ContentEncoding headers).
+
+                r.SendChunked = true;
+                r.TransferEncoding = string.Join(",", v.Split(',').Where(i => !i.Trim().Equals("chunked")).ToArray());
+            });
             this.restrictedHeaderActions.Add("User-Agent", (r, v) => r.UserAgent = v);
         }
 

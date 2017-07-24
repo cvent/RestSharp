@@ -42,9 +42,9 @@ namespace RestSharp
     {
 #if SIGNED
         public const string VERSION = "100.0.0";
-        public const string FILE_VERSION = "105.2.3";
+        public const string FILE_VERSION = "105.2.4";
 #else
-        public const string VERSION = "105.2.3";
+        public const string VERSION = "105.2.4";
 #endif
     }
 }
